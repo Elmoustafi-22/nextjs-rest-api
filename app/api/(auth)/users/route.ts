@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import connect from "@/lib/db";
 import User from "@/lib/models/user";
 import { Types } from "mongoose";
+import bcrypt from 'bcrypt'
 
 export const GET = async () => {
     try {
@@ -16,14 +17,38 @@ export const GET = async () => {
 export const POST = async (request: Request) => {
     try {
         const body = await request.json();
+        const { email, username, password } = body;
+        
+        if (!email || !username || !password) {
+            return new NextResponse(
+                JSON.stringify({
+                    success: false,
+                    message: "Name, username, and password are required."
+                }),
+                { status: 400 }
+            )
+        }
+
         await connect();
-        const newUser = new User(body)
+
+        const salt = await bcrypt.genSalt(10)
+        const hashedPassword = await bcrypt.hash(password, salt)
+
+        const newUser = new User({
+            email,
+            username,
+            password: hashedPassword
+        })
         await newUser.save();
 
         return new NextResponse(JSON.stringify({
             success: true,
             message: "User is created!",
-            user: newUser
+            user: {
+                _id: newUser._id,
+                email: newUser.email,
+                username: newUser.username
+            }
         }), {
             status: 200
         })
