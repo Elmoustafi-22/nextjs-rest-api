@@ -10,6 +10,11 @@ export const GET = async (request: Request) => {
         const { searchParams } = new URL(request.url);
         const userId = searchParams.get('userId');
         const categoryId = searchParams.get('categoryId')
+        const searchKeywords: string = searchParams.get('keywords') ?? "";
+        const startDate = searchParams.get('startDate');
+        const endDate = searchParams.get('endDate');
+        const page: number = parseInt(searchParams.get("page") ||  "1");
+        const limit: number = parseInt(searchParams.get("limit") || "10");
 
         if (!userId || !Types.ObjectId.isValid(userId)){
             return new NextResponse(
@@ -59,7 +64,35 @@ export const GET = async (request: Request) => {
             category: new Types.ObjectId(categoryId)
         }
 
-        const blogs = await Blog.find(filter);
+        if(searchKeywords){
+            filter.$or = [
+                {
+                    title: { $regex: searchKeywords, $options: "i" }
+                },
+                {
+                    description: { $regex: searchKeywords, $options: "i" }
+                }
+            ]
+        }
+
+        if (startDate && endDate){
+            filter.createdAt = {
+                $gte: new Date(startDate),
+                $lte: new Date(endDate),
+            }
+        } else if (startDate) {
+            filter.createdAt = {
+                $gte: new Date(startDate)
+            }
+        } else if (endDate) {
+            filter.createdAt = {
+                $gte: new Date(endDate)
+            }
+        }
+
+        const skip = (page - 1) * limit;
+
+        const blogs = await Blog.find(filter).sort({createdAt: "asc"}).skip(skip).limit(limit);
 
         return new NextResponse(
             JSON.stringify({ 
