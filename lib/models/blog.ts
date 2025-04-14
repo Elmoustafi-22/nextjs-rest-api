@@ -11,12 +11,12 @@ export interface IBlog {
 const BlogSchema: Schema<IBlog> = new Schema<IBlog>({
     title: { type: String, required:true },
     description: { type: String },
-    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    category: { type: Schema.Types.ObjectId, ref: "Category", required: true }
+    user: { type: Schema.Types.ObjectId, ref: "User" },
+    category: { type: Schema.Types.ObjectId, ref: "Category" }
 }, {
     timestamps: true
 });
 
-const Blog: Model<IBlog> = models.User || model("Blog", BlogSchema);
+const Blog: Model<IBlog> = models.Blog || model<IBlog>("Blog", BlogSchema);
 
 export default Blog;
