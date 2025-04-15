@@ -132,9 +132,9 @@ export const DELETE = async (request: Request) => {
 
         if (!Types.ObjectId.isValid(userId)) {
             return new NextResponse(
-                JSON.stringify({ message: "Invalid user id" })
-            ),
-            { status: 400 }
+                JSON.stringify({ message: "Invalid user id" }),
+                { status: 400 }
+            )
         }
 
         await connect();
@@ -159,7 +159,6 @@ export const DELETE = async (request: Request) => {
              { status: 200 }
         )
     } catch (err: any){
-        return new NextResponse(`Error in deleting user ${err.message}`),
-        { status: 500 }
+        return new NextResponse(`Error in deleting user ${err.message}`, {status: 500})
     }
 }
